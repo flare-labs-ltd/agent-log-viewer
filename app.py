@@ -4,7 +4,7 @@ import http.server
 import socketserver
 
 
-PORT = 3000
+PORT = int(os.environ.get('API_PORT'))
 DIRECTORY = '/var/logs'
 
 class SecureHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -27,7 +27,7 @@ class SecureHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.path = parsed_url.path
         super().do_GET()
 
-with socketserver.TCPServer(("0.0.0.0", PORT), SecureHTTPRequestHandler) as httpd:
+with socketserver.TCPServer(("127.0.0.1", PORT), SecureHTTPRequestHandler) as httpd:
     host, port = httpd.server_address
     print(f"Serving {DIRECTORY} files at http://{host}:{port}")
     httpd.serve_forever()

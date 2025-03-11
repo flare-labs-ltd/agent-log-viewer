@@ -1,8 +1,9 @@
 services:
   log-viewer:
     image: ${CI_REGISTRY_IMAGE}:${DEPLOY_IMAGE_TAG}
+    network_mode: "host"
     volumes:
       - ${LOG_DIR_PATH}:/var/logs
-    ports:
-      - ${LOG_VIEWER_PORT}:3000
+    environment:
+      - API_PORT=${API_PORT}
     restart: unless-stopped
