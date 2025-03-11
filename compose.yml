@@ -1,0 +1,8 @@
+services:
+  log-viewer:
+    image: ${CI_REGISTRY_IMAGE}:${DEPLOY_IMAGE_TAG}
+    volumes:
+      - ${LOG_DIR_PATH}:/var/logs
+    ports:
+      - ${LOG_VIEWER_PORT}:3000
+    restart: unless-stopped
