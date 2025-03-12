@@ -12,11 +12,11 @@ and fill in the .env file with required fields, then run
 docker build . -t log-viewer && docker compose up -d
 ```
 
-To expose via nginx, append the below configuration (assuming `.env` holds `API_PORT=57005`)
+To expose via nginx, append the below configuration:
 
 ```text
 location /view-logs {
-    proxy_pass http://127.0.0.1:57005;
+    proxy_pass http://127.0.0.1:{API_PORT};
     rewrite ^/view-logs/(.*)$ /$1 break;
 }
 ```
