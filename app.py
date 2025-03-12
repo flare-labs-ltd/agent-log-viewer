@@ -20,7 +20,7 @@ class SecureHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         if not safe_path.startswith(DIRECTORY) or not os.path.exists(safe_path):
             self.send_response(404)
             self.end_headers()
-            self.wfile.write(b"File Not Found")
+            self.wfile.write(f"File {safe_path} not found".encode())
             return
 
         # Serve file
