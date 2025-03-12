@@ -92,11 +92,13 @@ access by navigating to hostname.ext/<ROOT_API_PATH>/ (note the ending frontslas
 ## Security
 
 The service guarantees that only files within the specified `.env` directory `LOG_DIR_PATH` are exposed, via multiple layers of protection:
-2. **Application Layer**: Application is a 30-line python script, without external dependencies, that can be quickly reviewed by the user. It explicitly ensures that no files outside the given directory are exposed, and serves localy on 127.0.0.1.
+
+1. **Application Layer**: Application is a 30-line python script, without external dependencies, that can be quickly reviewed by the user. It explicitly ensures that no files outside the given directory are exposed, and serves localy on 127.0.0.1.
 1. **Container Layer**: The service is dockerized with only the specified directory mounted as a volume. Effectively, even if there is a bug at the application layer, it would have great difficulty penetrating outside the docker host's filesystem.
 
 Additionally, the service is further secured by the deployer's nginx configuration:
+
 1. **IP Whitelisting**: Only requests from the specified IP are allowed,
-2. **Basic Auth**: Only requests with the configured correct username and password are allowed.
+1. **Basic Auth**: Only requests with the configured correct username and password are allowed.
 
 Even though the served files should not be sensitive in nature, it is advised for the nginx configuration to provide TLS encryption.
