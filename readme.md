@@ -34,7 +34,7 @@ To authenticate access for user <username> via basic auth, run
 
 ```bash
 sudo sh -c "echo -n '<username>:' >> /etc/nginx/.htpasswd"
-sudo sh -c "openssl passwd -apr1 > /etc/nginx/.htpasswd"
+sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"
 ```
 
 then prepend the below configuration to the above nginx /view-logs location rule
