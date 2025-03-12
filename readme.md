@@ -1,5 +1,7 @@
 # Log Viewer Service
 
+## Run On Localhost
+
 A minimal dockerized python code for exposing files within a specified directory via http. To setup, run
 
 ```bash
@@ -12,34 +14,81 @@ and fill in the .env file with required fields, then run
 docker build . -t log-viewer && docker compose up -d
 ```
 
-To expose via nginx, append the below configuration:
+## Expose Via NGINX
+
+Append the below configuration to your existing nginx configuration:
 
 ```text
 location /view-logs {
-    proxy_pass http://127.0.0.1:{API_PORT};
+    proxy_pass http://127.0.0.1:<API_PORT>;
     rewrite ^/view-logs/(.*)$ /$1 break;
 }
 ```
 
+### IP whitelisting
+
 To allow access only from selected IP, prepend
 
 ```text
-allow IP;
+allow <IP>;
 deny all;
 ```
 
-to the above nginx /view-logs location rule.
+to the previous nginx /view-logs location rule.
 
-To authenticate access for user <username> via basic auth, run
+### Password protect
+
+To password-protect endpoint access for user <username> via basic auth, run
 
 ```bash
 sudo sh -c "echo -n '<username>:' >> /etc/nginx/.htpasswd"
-sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"
+sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd" # choose password
 ```
 
-then prepend the below configuration to the above nginx /view-logs location rule
+then prepend
 
 ```text
 auth_basic "Restricted Content";
 auth_basic_user_file /etc/nginx/.htpasswd;
 ```
+
+to the previous nginx /view-logs location rule (after IP whitelisting).
+
+### Example
+
+Example nginx configuration is
+
+```text
+{
+    listen 443 ssl http2;
+    server_name mydomain.com;
+
+    ssl_certificate /etc/letsencrypt/live/mydomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/mydomain.com/privkey.pem;
+
+    location /view-logs {
+        allow 155.130.131.55;
+        deny all;
+        auth_basic           "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
+        proxy_pass http://127.0.0.1:57005;
+        rewrite ^/view-logs/(.*)$ /$1 break;
+    }
+}
+```
+
+## Access
+
+access by navigating to hostname.ext/view-logs/ (note the ending frontslash).
+
+## Security
+
+The service guarrantees that only files within the specified `.env` directory `LOG_DIR_PATH` are exposed, via multiple layers of protection:
+2. **Application Layer**: Application is a 30-line python script, without external dependencies, that can be quickly reviewed by the user. It explicitly ensures that no files outside the given directory are exposed, and serves localy on 127.0.0.1.
+1. **Container Layer**: The service is dockerized with only the specified directory mounted as a volume. Effectively, even if there is a bug at the application layer, it would have great difficulty penetrating outside the docker host's filesystem.
+
+Additionally, the service is further secured by the deployer's nginx configuration:
+1. **IP Whitelisting**: Only requests from the specified IP are allowed,
+2. **Basic Auth**: Only requests with the configured correct username and password are allowed.
+
+Even though the served files should not be sensitive in nature, it is advised for the nginx configuration to provide TLS encryption.
