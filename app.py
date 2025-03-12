@@ -1,10 +1,10 @@
-import os
+from os import environ, path
 from urllib.parse import urlparse
 import http.server
 import socketserver
 
 
-PORT = int(os.environ.get('API_PORT'))
+PORT = int(environ.get('API_PORT'))
 DIRECTORY = '/var/logs'
 
 class SecureHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -16,8 +16,8 @@ class SecureHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         parsed_url = urlparse(self.path)
 
         # Secure file path resolution
-        safe_path = os.path.abspath(os.path.join(DIRECTORY, parsed_url.path.lstrip("/")))
-        if not safe_path.startswith(DIRECTORY) or not os.path.exists(safe_path):
+        safe_path = path.abspath(path.join(DIRECTORY, parsed_url.path.lstrip("/")))
+        if not safe_path.startswith(DIRECTORY) or not path.exists(safe_path):
             self.send_response(404)
             self.end_headers()
             self.wfile.write(f"File {safe_path} not found".encode())
