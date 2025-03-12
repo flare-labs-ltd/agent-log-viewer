@@ -19,9 +19,9 @@ docker build . -t log-viewer && docker compose up -d
 Append the below configuration to your existing nginx configuration:
 
 ```text
-location /view-logs {
+location /<ROOT_API_PATH> {
     proxy_pass http://127.0.0.1:<API_PORT>;
-    rewrite ^/view-logs/(.*)$ /$1 break;
+    rewrite ^/<ROOT_API_PATH>/(.*)$ /$1 break;
 }
 ```
 
@@ -34,14 +34,14 @@ allow <IP>;
 deny all;
 ```
 
-to the previous nginx /view-logs location rule.
+to the previous nginx /<ROOT_API_PATH> location rule.
 
 ### Password protect
 
-To password-protect endpoint access for user <username> via basic auth, run
+To password-protect endpoint access for user <USERNAME> via basic auth, run
 
 ```bash
-sudo sh -c "echo -n '<username>:' >> /etc/nginx/.htpasswd"
+sudo sh -c "echo -n '<USERNAME>:' >> /etc/nginx/.htpasswd"
 sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd" # choose password
 ```
 
@@ -52,7 +52,7 @@ auth_basic "Restricted Content";
 auth_basic_user_file /etc/nginx/.htpasswd;
 ```
 
-to the previous nginx /view-logs location rule (after IP whitelisting).
+to the previous nginx /<ROOT_API_PATH> location rule (after IP whitelisting).
 
 ### Example
 
@@ -66,24 +66,24 @@ Example nginx configuration is
     ssl_certificate /etc/letsencrypt/live/mydomain.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/mydomain.com/privkey.pem;
 
-    location /view-logs {
+    location /flare/view-logs {
         allow 155.130.131.55;
         deny all;
         auth_basic           "Restricted Content";
         auth_basic_user_file /etc/nginx/.htpasswd;
         proxy_pass http://127.0.0.1:57005;
-        rewrite ^/view-logs/(.*)$ /$1 break;
+        rewrite ^/flare/view-logs/(.*)$ /$1 break;
     }
 }
 ```
 
 ## Access
 
-access by navigating to hostname.ext/view-logs/ (note the ending frontslash).
+access by navigating to hostname.ext/<ROOT_API_PATH>/ (note the ending frontslash).
 
 ## Security
 
-The service guarrantees that only files within the specified `.env` directory `LOG_DIR_PATH` are exposed, via multiple layers of protection:
+The service guarantees that only files within the specified `.env` directory `LOG_DIR_PATH` are exposed, via multiple layers of protection:
 2. **Application Layer**: Application is a 30-line python script, without external dependencies, that can be quickly reviewed by the user. It explicitly ensures that no files outside the given directory are exposed, and serves localy on 127.0.0.1.
 1. **Container Layer**: The service is dockerized with only the specified directory mounted as a volume. Effectively, even if there is a bug at the application layer, it would have great difficulty penetrating outside the docker host's filesystem.
 
